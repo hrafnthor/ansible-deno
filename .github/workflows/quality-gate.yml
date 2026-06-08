@@ -1,0 +1,50 @@
+name: quality-gate
+
+on:
+  # allow manual triggering of action
+  workflow_dispatch:
+
+  # Allow other workflows to invoke this workflow
+  workflow_call:
+
+  pull_request:
+    branches:
+      - "main"
+
+  push:
+    tags:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install Molecule
+      run: |
+        pip install -U pip setuptools wheel
+        pip install ansible ansible-lint molecule molecule-plugins[docker]
+
+    - name: Test installing two different versions
+      run: molecule  test --scenario-name install
+
+    - name: Test installing one specific version to a custom path
+      run: molecule  test --scenario-name install
+
+    - name: Test specific version removal
+      run: molecule test --scenario-name remove-version
+
+    - name: Test removing a specific version global path addition only
+      run: molecule test --scenario-name remove-primary
+
+    - name: Test removing a specific version including global path addition
+      run: molecule test --scenario-name remove-version-primary
+
+    - name: Test removal of all versions and primary links
+      run: molecule test --scenario-name remove
