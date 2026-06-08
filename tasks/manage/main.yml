@@ -1,0 +1,22 @@
+- name: "HTH | Deno | Set version path"
+  ansible.builtin.set_fact:
+    hth_deno_version_path: "{{ hth_deno_path }}/{{ hth_deno_version.version }}"
+
+- name: "HTH | Deno | Stat version executable"
+  ansible.builtin.stat:
+    path: "{{ hth_deno_version_path }}/deno"
+  register: hth_deno_version_state
+  when:
+    - hth_deno_version.remove is undefined or not hth_deno_version.remove
+
+- name: "HTH | Deno | Download version"
+  ansible.builtin.include_tasks: download.yml
+  when:
+    - hth_deno_version.remove is undefined or not hth_deno_version.remove
+    - not hth_deno_version_state.stat.exists
+
+- name: "HTH | Deno | Remove version"
+  ansible.builtin.include_tasks: remove.yml
+  when:
+    - hth_deno_version.remove is defined
+    - hth_deno_version.remove

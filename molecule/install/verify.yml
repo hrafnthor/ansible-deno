@@ -1,0 +1,60 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+  - name: Load role defaults
+    include_vars:
+      file: "../../defaults/main.yml"
+
+  - name: Set version 2.8.1 path
+    set_fact:
+      version_one_path: "{{ hth_deno_default_install_path }}/2.8.1/deno"
+
+  - name: Set version 2.8.2 path
+    set_fact:
+      version_two_path: "{{ hth_deno_default_install_path }}/2.8.2/deno"
+
+  - name: Check for version 2.8.1 installation
+    stat:
+      path: "{{ version_one_path }}"
+    register: version_one
+
+  - name: Fail if version 2.8.1 is not found
+    fail:
+      msg: "Version 2.8.1 of Deno was not found at expected location!"
+    when: not version_one.stat.exists
+
+  - name: Check for version 2.8.1 installation
+    stat:
+      path: "{{ version_two_path }}"
+    register: version_two
+
+  - name: Fail if version 2.8.2 is not found
+    fail:
+      msg: "Version 2.8.2 of Deno was not found at expected location!"
+    when: not version_two.stat.exists
+
+  - name: Check for primary version link
+    stat:
+      path: "{{ hth_deno_primary_executable_link_path }}"
+    register: primary
+
+  - name: Fail if primary version is not found
+    fail:
+      msg: "No primary linked version found!"
+    when: not primary.stat.exists
+
+  - name: Fail if primary version does not match expected
+    fail:
+      msg: "Linked primary version did not match expected path!"
+    when: primary.stat.lnk_source != version_two_path
+
+  - name: Check primary version code
+    command: deno --version
+    register: deno_version
+    changed_when: false
+
+  - name: Ensure primary version matches requested version
+    fail:
+      msg: "Primary linked 'deno' reported unexpected version!"
+    when: "'2.8.2' not in deno_version.stdout"

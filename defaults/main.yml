@@ -1,0 +1,11 @@
+# The default installation path where Deno versions will be placed
+hth_deno_default_install_path: "/opt/deno"
+
+hth_deno_default_install_path_owner: "root"
+
+hth_deno_default_install_path_group: "root"
+
+hth_deno_default_install_path_mode: "0755"
+
+# The default symlink path for the primary version of Deno
+hth_deno_primary_executable_link_path: "/usr/bin/deno"

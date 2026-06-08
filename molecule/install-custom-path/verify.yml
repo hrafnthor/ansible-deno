@@ -1,0 +1,58 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+  - name: Load role defaults
+    include_vars:
+      file: "../../defaults/main.yml"
+
+  - name: Set version path
+    set_fact:
+      version_path: "/opt/testing/2.8.1"
+
+  - name: Check for version installation
+    stat:
+      path: "{{ version_path }}"
+    register: version
+
+  - name: Fail if version is not found
+    fail:
+      msg: "Version 2.8.1 of Deno was not found at expected location!"
+    when: not version.stat.exists
+
+  - name: Fail if version directory ownership is not correct
+    fail:
+      msg: "Installation directory is not owned by correct user!"
+    when:
+      - version.stat.pw_name != 'bob' or version.stat.gr_name != 'bob'
+
+  - name: Fail if version directory mode is not correct
+    fail:
+      msg: "Installation directory does not have correct access mode"
+    when:
+      - version.stat.mode != '0775'
+
+  - name: Check for primary version link
+    stat:
+      path: "{{ hth_deno_primary_executable_link_path }}"
+    register: primary
+
+  - name: Fail if primary version is not found
+    fail:
+      msg: "No primary linked version found!"
+    when: not primary.stat.exists
+
+  - name: Fail if primary version does not match expected
+    fail:
+      msg: "Linked primary version did not match expected path!"
+    when: primary.stat.lnk_source != version_path ~ '/deno'
+
+  - name: Check primary version code
+    command: deno --version
+    register: deno_version
+    changed_when: false
+
+  - name: Ensure primary version matches requested version
+    fail:
+      msg: "Primary linked 'deno' reported unexpected version!"
+    when: "'2.8.1' not in deno_version.stdout"

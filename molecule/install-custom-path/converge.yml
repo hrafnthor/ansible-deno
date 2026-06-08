@@ -1,0 +1,18 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+  - role: hth.deno
+    vars:
+      deno:
+        location:
+          owner: "bob"
+          group: "bob"
+          mode: "0775"
+          path: "/opt/testing"
+        primary: "2.8.1"
+        versions:
+          - version: "2.8.1"
+            checksum: "sha256:2d7bb6195226ac832e0bf7109a115f0af65ee69ac797a4bbde5b27a06cc242d9"

@@ -1,0 +1,31 @@
+---
+- name: Verify
+  hosts: all
+  tasks:
+  - name: Load role defaults
+    include_vars:
+      file: "../../defaults/main.yml"
+
+  - name: Set version path
+    set_fact:
+      version_path: "{{ hth_deno_default_install_path }}/2.8.1/deno"
+
+  - name: Check for version installation
+    stat:
+      path: "{{ hth_deno_primary_executable_link_path }}"
+    register: primary
+
+  - name: Fail if primary version is found
+    fail:
+      msg: "A primary linked version was still found!"
+    when: primary.stat.exists
+
+  - name: Check for version installation
+    stat:
+      path: "{{ version_path }}"
+    register: version
+
+  - name: Fail if version is found
+    fail:
+      msg: "Version 2.8.1 was still found!"
+    when: version.stat.exists

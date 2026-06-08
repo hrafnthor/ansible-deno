@@ -1,0 +1,9 @@
+- name: Prepare
+  hosts: all
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - name: Install unzip
+      ansible.builtin.apt:
+        update_cache: yes
+        name: unzip

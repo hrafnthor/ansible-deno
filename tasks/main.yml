@@ -1,0 +1,84 @@
+- name: "HTH | Deno | Run input assertions"
+  ansible.utils.validate:
+    data: "{{ deno }}"
+    criteria: "{{ lookup('file', 'criteria/deno-criteria.json') | from_json }}"
+    engine: ansible.utils.jsonschema
+  run_once: yes
+  delegate_to: localhost
+  when:
+    - deno is defined
+
+- name: "HTH | Deno | Assert that host is Linux based"
+  ansible.builtin.fail:
+    msg: "This role only supports Linux systems!"
+  when:
+    - ansible_facts['system'] != 'Linux'
+
+- name: "HTH | Deno | Set installation path"
+  ansible.builtin.set_fact:
+    hth_deno_path: "{{ deno.location.path | default(hth_deno_default_install_path) }}"
+  when:
+    - deno is defined
+
+- name: "HTH | Deno | Set installation path owner"
+  ansible.builtin.set_fact:
+    hth_deno_path_owner: "{{ deno.location.owner | default(hth_deno_default_install_path_owner) }}"
+  when:
+    - deno is defined
+
+- name: "HTH | Deno | Set installation path group"
+  ansible.builtin.set_fact:
+    hth_deno_path_group: "{{ deno.location.group | default(hth_deno_default_install_path_group) }}"
+  when:
+    - deno is defined
+
+- name: "HTH | Deno | Set installation path mode"
+  ansible.builtin.set_fact:
+    hth_deno_path_mode: "{{ deno.location.mode | default(hth_deno_default_install_path_mode) }}"
+  when:
+    - deno is defined
+
+- name: "HTH | Deno | Create installation path"
+  ansible.builtin.file:
+    path: "{{ hth_deno_path }}"
+    owner: "{{ hth_deno_path_owner }}"
+    group: "{{ hth_deno_path_group }}"
+    mode: "{{ hth_deno_path_mode }}"
+    state: directory
+  when:
+    - deno is defined
+    - deno.remove is undefined or not deno.remove
+
+- name: "HTH | Deno | Manage version"
+  ansible.builtin.include_tasks: manage/main.yml
+  loop: "{{ deno.versions }}"
+  loop_control:
+    loop_var: hth_deno_version
+  when:
+    - deno is defined
+    - deno.versions is defined
+    - deno.remove is undefined or not deno.remove
+
+- name: "HTH | Deno | Add version to path"
+  ansible.builtin.include_tasks: primary.yml
+  when:
+    - deno is defined
+    - deno.remove is undefined or not deno.remove
+    - deno.primary is defined
+
+- name: "HTH | Deno | Remove primary version executable symlink"
+  ansible.builtin.file:
+    path: "{{ hth_deno_primary_executable_link_path }}"
+    state: absent
+  when:
+    - deno is defined
+    - (deno.remove is defined and deno.remove) or deno.primary is undefined
+
+- name: "HTH | Deno | Remove installation directory"
+  ansible.builtin.file:
+    path: "{{ hth_deno_path }}"
+    state: absent
+  when:
+    - deno is defined
+    - deno.remove is defined
+    - deno.remove
