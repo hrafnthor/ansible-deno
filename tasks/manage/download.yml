@@ -1,0 +1,34 @@
+- name: "HTH | Deno | Set version archive remote name"
+  ansible.builtin.set_fact:
+    hth_deno_version_archive_remote_name: "deno-{{ ansible_facts['architecture'] }}-unknown-linux-gnu.zip"
+
+- name: "HTH | Deno | Set version archive download name"
+  ansible.builtin.set_fact:
+    hth_deno_version_archive_download_name: "deno-{{ hth_deno_version.version }}.zip"
+
+- name: "HTH | Deno | Set version archive download path"
+  ansible.builtin.set_fact:
+    hth_deno_version_archive_download_path: "/tmp/{{ hth_deno_version_archive_download_name }}"
+
+- name: "HTH | Deno | Set version archive download url"
+  ansible.builtin.set_fact:
+    hth_deno_version_archive_download_url: "https://github.com/denoland/deno/releases/download/v{{ hth_deno_version.version }}/{{ hth_deno_version_archive_remote_name }}"
+
+- block:
+
+  - name: "HTH | Deno | Download version archive"
+    ansible.builtin.get_url:
+      url: "{{ hth_deno_version_archive_download_url }}"
+      dest: "{{ hth_deno_version_archive_download_path }}"
+      checksum: "{{ hth_deno_version.checksum }}"
+    register: hth_deno_archive_download_state
+
+  - name: "HTH | Deno | Extract version archive"
+    ansible.builtin.include_tasks: extract/main.yml
+
+  always:
+
+    - name: "HTH | Deno | Cleanup temporary files"
+      ansible.builtin.file:
+        path: "{{ hth_deno_version_archive_download_path }}"
+        state: absent

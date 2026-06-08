@@ -1,0 +1,24 @@
+- name: "HTH | Deno | Set version executable path"
+  ansible.builtin.set_fact:
+    hth_deno_version_executable_path: "{{ hth_deno_version_path }}/deno"
+
+- name: "HTH | Deno | Stat current primary executable"
+  ansible.builtin.stat:
+    path: "{{ hth_deno_primary_executable_link_path }}"
+  register: hth_deno_primary_executable
+
+- name: "HTH | Deno | Remove primary version executable symlink"
+  ansible.builtin.file:
+    path: "{{ hth_deno_primary_executable_link_path }}"
+    state: absent
+  when:
+    - hth_deno_primary_executable.stat.exists
+    - hth_deno_primary_executable.stat.lnk_source == hth_deno_version_executable_path
+
+- name: "HTH | Deno | Remove version"
+  ansible.builtin.file:
+    path: "{{ hth_deno_version_path }}"
+    state: absent
+  when:
+    - hth_deno_version.remove is defined
+    - hth_deno_version.remove

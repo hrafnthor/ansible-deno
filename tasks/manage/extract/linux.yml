@@ -1,0 +1,18 @@
+- name: "HTH | Deno | Ensure extraction path"
+  ansible.builtin.file:
+    path: "{{ hth_deno_version_path }}"
+    owner: "{{ hth_deno_path_owner }}"
+    group: "{{ hth_deno_path_group }}"
+    mode: "{{ hth_deno_path_mode }}"
+    modification_time: preserve
+    access_time: preserve
+    state: directory
+
+- name: "HTH | Deno | Extract archive"
+  ansible.builtin.unarchive:
+    src: "{{ hth_deno_version_archive_download_path }}"
+    dest: "{{ hth_deno_version_path }}/"
+    owner: "{{ hth_deno_path_owner }}"
+    group: "{{ hth_deno_path_group }}"
+    remote_src: yes
+    mode: 0755

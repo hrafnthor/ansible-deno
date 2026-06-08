@@ -1,0 +1,97 @@
+{
+    "title": "deno",
+    "description": "A json schema definition for Deno management",
+    "type": "object",
+    "properties":
+    {
+        "remove":
+        {
+            "description": "Indicates all versions and files created by this role should be removed. Default 'false'.",
+            "type": "boolean"
+        },
+        "location":
+        {
+            "description": "Defines values for installation location configuration.",
+            "type": "object",
+            "properties":
+            {
+                "owner":
+                {
+                    "description": "The owner of the installation location. Defaults to 'hth_deno_default_install_path_owner'.",
+                    "ref": "#/definitions/non-empty-string"
+                },
+                "group":
+                {
+                    "description": "The group owning the installation location. Defaults to 'hth_deno_default_install_path_group'.",
+                    "ref": "#/definitions/non-empty-string"
+                },
+                "mode":
+                {
+                    "description": "The access mode of the installation location. Defaults to 'hth_deno_default_install_path_mode'",
+                    "ref": "#/definitions/non-empty-string"
+                },
+                "path":
+                {
+                    "description": "The path to where new versions will be placed. Defaults to 'hth_deno_default_install_path'",
+                    "ref": "#/definitions/non-empty-string"
+                }
+            }
+        },
+        "primary":
+        {
+            "description": "Indicates the version that should be set as the primary version linked to the path.",
+            "ref": "#/definitions/non-empty-string"
+        },
+        "versions":
+        {
+            "type": "array",
+            "items":
+            {
+                "type": "object",
+                "properties":
+                {
+                    "version":
+                    {
+                        "description": "The version to manage.",
+                        "ref": "#/definitions/non-empty-string"
+                    },
+                    "checksum":
+                    {
+                        "description": "The checksum for the version as supplied along side the artifact on their release page.",
+                        "ref": "#/definitions/non-empty-string"
+                    },
+                    "remove":
+                    {
+                        "description": "Indicates if this version should be removed. Default 'false'",
+                        "type": "boolean"
+                    }
+                },
+                "oneOf":
+                [
+                    {
+                        "required":
+                        [
+                            "version",
+                            "checksum"
+                        ]
+                    },
+                    {
+                        "required":
+                        [
+                            "version",
+                            "remove"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "definitions":
+    {
+        "non-empty-string":
+        {
+            "type": "string",
+            "minLength": 1
+        }
+    }
+}

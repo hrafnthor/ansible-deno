@@ -1,0 +1,30 @@
+- name: "HTH | Deno | Set version executable path"
+  ansible.builtin.set_fact:
+    hth_deno_primary_version_path: "{{ hth_deno_path }}/{{ deno.primary }}/deno"
+
+- name: "HTH | Deno | Stat version executable"
+  ansible.builtin.stat:
+    path: "{{ hth_deno_primary_version_path }}"
+  register: hth_deno_primary_version_executable
+
+- name: "HTH | Deno | Ensure version executable exists"
+  ansible.builtin.fail:
+    msg: "Requested primary version of Deno does not exist at {{ hth_deno_primary_version_path }}!"
+  when:
+    - not hth_deno_primary_version_executable.stat.exists
+
+- name: "HTH | Deno | Stat current primary executable"
+  ansible.builtin.stat:
+    path: "{{ hth_deno_primary_executable_link_path }}"
+  register: hth_deno_primary_executable
+
+- name: "HTH | Deno | Symlink primary version executable"
+  ansible.builtin.file:
+    src: "{{ hth_deno_primary_version_path }}"
+    dest: "{{ hth_deno_primary_executable_link_path }}"
+    owner: "{{ hth_deno_path_owner }}"
+    group: "{{ hth_deno_path_group }}"
+    mode: 0755
+    state: link
+  when:
+    - not hth_deno_primary_executable.stat.exists or hth_deno_primary_executable.stat.path != hth_deno_version_path
