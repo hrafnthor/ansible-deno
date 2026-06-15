@@ -35,7 +35,7 @@ jobs:
       run: molecule  test --scenario-name install
 
     - name: Test installing one specific version to a custom path
-      run: molecule  test --scenario-name install
+      run: molecule  test --scenario-name install-custom-path
 
     - name: Test specific version removal
       run: molecule test --scenario-name remove-version
